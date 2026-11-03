@@ -1,0 +1,61 @@
+services:
+  user-service:
+    image: ${USER_IMAGE:-user-service:1.0.0}
+    build: ../services/user-service
+    environment:
+      PORT: 3001
+    expose: ["3001"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    networks: [app-net]
+
+  product-service:
+    image: ${PRODUCT_IMAGE:-product-service:1.0.0}
+    build: ../services/product-service
+    environment:
+      PORT: 3002
+    expose: ["3002"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    networks: [app-net]
+
+  order-service:
+    image: ${ORDER_IMAGE:-order-service:1.0.0}
+    build: ../services/order-service
+    environment:
+      PORT: 3003
+    expose: ["3003"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3003/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    networks: [app-net]
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports: ["80:80"]
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      user-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [app-net]
+
+networks:
+  app-net:
+    driver: bridge

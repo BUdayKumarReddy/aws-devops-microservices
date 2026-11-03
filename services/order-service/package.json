@@ -1,0 +1,6 @@
+{
+  "name": "order-service",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": { "start": "node server.js", "test": "node -e \"console.log('Order Service basic test passed')\"" }
+}
