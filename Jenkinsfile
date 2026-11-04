@@ -3,8 +3,8 @@ pipeline {
   options { timestamps(); disableConcurrentBuilds() }
 
   environment {
-    AWS_REGION = 'ap-south-1'
-    AWS_ACCOUNT_ID = 'REPLACE_WITH_ACCOUNT_ID'
+    AWS_REGION = 'ap-south-2'
+    AWS_ACCOUNT_ID = '576406717252'
     IMAGE_TAG = "build-${BUILD_NUMBER}"
     ECR_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
   }
