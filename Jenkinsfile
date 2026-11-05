@@ -60,6 +60,7 @@ pipeline {
       }
     }
 
+    
     stage('Deploy') {
       steps {
         withCredentials([
@@ -77,39 +78,48 @@ pipeline {
               -o UserKnownHostsFile=/dev/null \
               "$SSH_USER@$APP_EC2_HOST" 'bash -s' <<REMOTE
 
-            set -e
+set -e
 
-            cd /home/ubuntu/three-microservices/docker
+cd /home/ubuntu/three-microservices/docker
 
-            echo "Logging in to ECR..."
-            sudo aws ecr get-login-password --region ${AWS_REGION} | sudo docker login --username AWS --password-stdin ${ECR_REGISTRY}
+echo "Logging in to ECR..."
+sudo aws ecr get-login-password --region ${AWS_REGION} | sudo docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
-            echo "Updating image tags..."
-            sudo sed -i "s|^USER_IMAGE=.*|USER_IMAGE=${ECR_REGISTRY}/user-service:${IMAGE_TAG}|" .env
-            sudo sed -i "s|^PRODUCT_IMAGE=.*|PRODUCT_IMAGE=${ECR_REGISTRY}/product-service:${IMAGE_TAG}|" .env
-            sudo sed -i "s|^ORDER_IMAGE=.*|ORDER_IMAGE=${ECR_REGISTRY}/order-service:${IMAGE_TAG}|" .env
+echo "Updating image tags..."
+sudo sed -i "s|^USER_IMAGE=.*|USER_IMAGE=${ECR_REGISTRY}/user-service:${IMAGE_TAG}|" .env
+sudo sed -i "s|^PRODUCT_IMAGE=.*|PRODUCT_IMAGE=${ECR_REGISTRY}/product-service:${IMAGE_TAG}|" .env
+sudo sed -i "s|^ORDER_IMAGE=.*|ORDER_IMAGE=${ECR_REGISTRY}/order-service:${IMAGE_TAG}|" .env
 
-            echo "Validating Docker Compose..."
-            sudo docker compose config -q
+echo "Validating Docker Compose..."
+sudo docker compose config -q
 
-            echo "Pulling latest images..."
-            sudo docker compose pull
+echo "Pulling latest images..."
+sudo docker compose pull
 
-            echo "Deploying containers..."
-            sudo docker compose up -d --remove-orphans
+echo "Deploying containers..."
+sudo docker compose up -d --remove-orphans
 
-            echo "Checking application health..."
-            curl -fsS http://localhost/users/health
-            curl -fsS http://localhost/products/health
-            curl -fsS http://localhost/orders/health
+echo "Waiting for services to initialize..."
+sleep 5
 
-            echo "Deployment completed successfully!"
-            REMOTE
+echo "Restarting Nginx to refresh Docker service IPs..."
+sudo docker compose restart nginx
+
+echo "Checking application health..."
+curl --retry 10 --retry-delay 2 --retry-connrefused -fsS http://localhost/users/health
+echo
+curl --retry 10 --retry-delay 2 --retry-connrefused -fsS http://localhost/products/health
+echo
+curl --retry 10 --retry-delay 2 --retry-connrefused -fsS http://localhost/orders/health
+echo
+
+echo "Deployment completed successfully!"
+REMOTE
           '''
         }
       }
     }
-  }
+
 
   post {
     success {
