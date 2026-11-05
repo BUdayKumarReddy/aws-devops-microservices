@@ -35,17 +35,15 @@ pipeline {
       }
     }
     stage('Push to ECR') {
-      steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-ecr-push']]) {
-          sh '''
-            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
-            docker push ${ECR_REGISTRY}/user-service:${IMAGE_TAG}
-            docker push ${ECR_REGISTRY}/product-service:${IMAGE_TAG}
-            docker push ${ECR_REGISTRY}/order-service:${IMAGE_TAG}
-          '''
-        }
-      }
-    }
+  steps {
+    sh '''
+      aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+      docker push ${ECR_REGISTRY}/user-service:${IMAGE_TAG}
+      docker push ${ECR_REGISTRY}/product-service:${IMAGE_TAG}
+      docker push ${ECR_REGISTRY}/order-service:${IMAGE_TAG}
+    '''
+  }
+}
     stage('Deploy') {
       steps {
         echo 'TODO: Securely transfer compose/env deployment files and invoke deploy.sh on EC2.'
