@@ -60,7 +60,6 @@ pipeline {
       }
     }
 
-    
     stage('Deploy') {
       steps {
         withCredentials([
@@ -119,7 +118,7 @@ REMOTE
         }
       }
     }
-
+  }
 
   post {
     success {
