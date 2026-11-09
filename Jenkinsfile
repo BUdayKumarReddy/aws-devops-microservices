@@ -159,18 +159,17 @@ sudo docker compose restart nginx
 
 echo "Checking application health..."
 
-curl --retry 10 --retry-delay 2 --retry-connrefused -fsS http://localhost/users/health
+curl --retry 15 --retry-all-errors --retry-delay 2 --connect-timeout 5 --max-time 10 -fsS http://localhost/users/health
 
 echo
 
-curl --retry 10 --retry-delay 2 --retry-connrefused -fsS http://localhost/products/health
+curl --retry 15 --retry-all-errors --retry-delay 2 --connect-timeout 5 --max-time 10 -fsS http://localhost/products/health
 
 echo
 
-curl --retry 10 --retry-delay 2 --retry-connrefused -fsS http://localhost/orders/health
+curl --retry 15 --retry-all-errors --retry-delay 2 --connect-timeout 5 --max-time 10 -fsS http://localhost/orders/health
 
 echo
-
 echo "All application health checks passed!"
 
 echo "Deployment completed successfully."
