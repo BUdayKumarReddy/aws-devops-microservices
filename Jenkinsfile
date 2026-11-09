@@ -60,7 +60,6 @@ pipeline {
       }
     }
 
-    ```groovy
 pipeline {
   agent any
 
@@ -241,4 +240,3 @@ REMOTE
     }
   }
 }
-```
